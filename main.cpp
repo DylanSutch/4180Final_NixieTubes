@@ -40,9 +40,20 @@
 #define ESC 0x1B
 
 #define BLUETOOTH
+#include "mbed.h"
+
+BusOut Anodes(p11, p12, p13, p14);
+BusOut Digit(p24,p23,p22,p21);
+DigitalOut A(p24);
+DigitalOut B(p23);
+DigitalOut C(p22);
+DigitalOut D(p21);
 
 Serial bluemod(p28,p27);
 
+void demo();
+void show_time(int hour, int min);
+int fix_digit(int num);
 void get_user_input(char* message, uint8_t min, uint8_t max, uint32_t* member);
 void get_user_input(char* message, uint8_t min, uint8_t max, bool* member);
 void get_bt_user_input(char* message, uint8_t min, uint8_t max, uint32_t* member);
@@ -303,3 +314,91 @@ void get_bt_user_input(char* message, uint8_t min, uint8_t max, bool* member)
     }
     while((*(member) < min) || (*(member) > max));
 }    
+
+
+/**********************************************************************
+* Function: fix_digit()
+* Parameters: num - number to show on nixie tube            
+* Returns: value to send to multiplexer
+*
+* Description: the wiring for the multiplexer is a bit off, so this
+*              function makes the proper adjustment to set the multiplexer
+*              bus
+**********************************************************************/
+int fix_digit(int num)
+{
+    switch(num){
+        case 0:
+            return 1;
+        case 1:
+            return 0;
+        case 2:
+            return 9;
+        case 3:
+            return 8;
+        case 4:
+            return 7;
+        case 5:
+            return 6;
+        case 6:
+            return 5;
+        case 7:
+            return 4;
+        case 8:
+            return 3;
+        case 9:
+            return 2;
+    }
+    return num;
+}
+
+/**********************************************************************
+* Function: show_time()
+* Parameters: hour - hour
+*             min - minute             
+* Returns: none
+*
+* Description: Displays the hour and minutes on the nixie tubes
+*              
+*
+**********************************************************************/
+void show_time(int hour, int min)
+{   
+    if(hour > 9)
+    {
+        Digit = fix_digit(1);
+        hour = hour - 10;
+    }
+    else
+    {
+        Digit = fix_digit(0);
+    }
+    
+    wait_ms(2);
+    Anodes = 1;
+    wait_ms(1);
+    Anodes = 0;
+    
+    Digit = fix_digit(hour);
+            
+    wait_ms(2);
+    Anodes = 2;
+    wait_ms(1);
+    Anodes = 0;
+    
+    Digit = fix_digit(min / 10);
+            
+    wait_ms(2);
+    Anodes = 4;
+    wait_ms(1);
+    Anodes = 0;
+            
+    Digit = fix_digit(min % 10);
+            
+    wait_ms(2);
+    Anodes = 8;
+    wait_ms(1);
+    Anodes = 0;
+    
+    return;
+}

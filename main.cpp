@@ -163,6 +163,7 @@ int main(void)
     if(rtc.set_time(rtc_time))
     {
         printf("\nrtc.set_time failed!!\n");
+        bluemod.printf("\nrtc.set_time failed!!\n");
         exit(0);
     }
     
@@ -170,6 +171,7 @@ int main(void)
     if(rtc.set_calendar(rtc_calendar))
     {
         printf("\nrtc.set_calendar failed!!\n");
+        bluemod.printf("\nrtc.set_calendar failed!!\n");
         exit(0);
     }
     
@@ -177,18 +179,24 @@ int main(void)
     
     for(;;)
     {   
+        // prints to both pc and bluetooth, covers both bases
         printf("%c[2J", ESC); //clear screen
+        bluemod.printf("%c[2J", ESC);
         printf("%c[H", ESC); //move cursor to Home
+        bluemod.printf("%c[H", ESC);
         
         //new epoch time fx
         epoch_time = rtc.get_epoch();
         
         printf("\nTime as seconds since January 1, 1970 = %d\n", epoch_time);
+        bluemod.printf("\nTime as seconds since January 1, 1970 = %d\n", epoch_time);
         
         printf("\nTime as a basic string = %s", ctime(&epoch_time));
+        bluemod.printf("\nTime as a basic string = %s", ctime(&epoch_time));
  
         strftime(buffer, 32, "%I:%M %p\n", localtime(&epoch_time));
         printf("\nTime as a custom formatted string = %s", buffer);
+        bluemod.printf("\nTime as a custom formatted string = %s", buffer);
         
         wait(1.0);
     }//loop 
@@ -272,25 +280,6 @@ void get_bt_user_input(char* message, uint8_t min, uint8_t max, uint32_t* member
         }
     }
     while((*(member) < min) || (*(member) > max));
-    
-    
-   /* while(1) {
-        if (bluemod.readable()) {
-            if (bluemod.getc()=='!') {
-                if (bluemod.getc()=='C') { //color data packet
-                    bred = bluemod.getc(); // RGB color values
-                    bgreen = bluemod.getc();
-                    bblue = bluemod.getc();
-                    if (bluemod.getc()==char(~('!' + 'C' + bred + bgreen + bblue))) { //checksum OK?
-                        RGBLED_r = bred/255.0; //send new color to RGB LED PWM outputs
-                        RGBLED_g = bgreen/255.0;
-                        RGBLED_b = bblue/255.0;
-                    }
-                break;
-                }
-            }
-        }
-    }*/
 }
 
 void get_bt_user_input(char* message, uint8_t min, uint8_t max, bool* member)
